@@ -6,6 +6,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { AppModule } from '@app/app.module';
 import { HttpExceptionFilter } from '@app/filters/http-exception.filter';
+import { PrismaService } from '@app/prisma/prisma.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -16,7 +17,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
-  app.enableShutdownHooks();
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
   app.use((req: Request, res: Response, next: NextFunction) => {
     Logger.log(
       `[${new Date().toDateString()}] - [${req.ip}] - \x1b[33m[${
