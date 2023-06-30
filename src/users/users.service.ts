@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '@app/prisma/prisma.service';
 
@@ -37,10 +38,13 @@ export class UsersService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(data.password, salt);
     return this.prisma.user.create({
       data: {
         ...data,
         dateOfBirth: new Date(data.dateOfBirth),
+        password: hashedPassword,
       },
     });
   }
@@ -58,12 +62,10 @@ export class UsersService {
     }
 
     const { ...updateDetails } = data;
-    if (userToUpdate.email === data.email) {
+    if ('email' in userToUpdate && userToUpdate.email === data.email) {
       delete updateDetails.email;
-    } else {
-      const emailExists = await this.prisma.user.findUnique({
-        where: { email: data.email as string },
-      });
+    } else if ('email' in updateDetails) {
+      const emailExists = await this.prisma.user.findUnique({ where: {} });
       if (emailExists) {
         throw new ConflictException('Email already exists.');
       }
@@ -74,6 +76,14 @@ export class UsersService {
       typeof updateDetails.dateOfBirth === 'string'
     ) {
       updateDetails.dateOfBirth = new Date(updateDetails.dateOfBirth as string);
+    }
+
+    if ('password' in updateDetails) {
+      const salt = await bcrypt.genSalt();
+      updateDetails.password = await bcrypt.hash(
+        updateDetails.password as string,
+        salt,
+      );
     }
 
     return this.prisma.user.update({
