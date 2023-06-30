@@ -37,7 +37,7 @@ export class UsersController {
   @HttpCode(200)
   @Get('/:uuid')
   getUser(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
-    return this.userService.user({ id: uuid });
+    return this.userService.findUserById(uuid);
   }
 
   @Roles(Role.ADMIN)
@@ -56,10 +56,7 @@ export class UsersController {
     @Param('uuid', new ParseUUIDPipe()) uuid: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.updateUser({
-      where: { id: uuid },
-      data: updateUserDto,
-    });
+    return this.userService.updateUser(uuid, updateUserDto);
   }
 
   @Roles(Role.ADMIN)

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { User, Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '@app/prisma/prisma.service';
@@ -40,8 +40,7 @@ export class UsersService {
 
   async createUser(userData: Prisma.UserCreateInput): Promise<User> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
+    const hashedPassword = await this.encryptPassword(userData.password);
     return this.prisma.user.create({
       data: {
         ...userData,
@@ -53,14 +52,16 @@ export class UsersService {
     });
   }
 
-  async updateUser(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }): Promise<User> {
-    const { where, data } = params;
-    const userToUpdate = await this.prisma.user.findUnique({
-      where: { ...where },
-    });
+  private async encryptPassword(password: string) {
+    const salt = await bcrypt.genSalt();
+    return await bcrypt.hash(password, salt);
+  }
+
+  async updateUser(
+    userId: string,
+    data: Prisma.UserUpdateInput,
+  ): Promise<User> {
+    const userToUpdate = await this.findUserById(userId);
     if (!userToUpdate) {
       throw new NotFoundException('User not found.');
     }
@@ -83,10 +84,8 @@ export class UsersService {
     }
 
     if ('password' in updateDetails) {
-      const salt = await bcrypt.genSalt();
-      updateDetails.password = await bcrypt.hash(
+      updateDetails.password = await this.encryptPassword(
         updateDetails.password as string,
-        salt,
       );
     }
 
@@ -94,13 +93,25 @@ export class UsersService {
       data: {
         ...updateDetails,
       },
-      where,
+      where: { id: userId },
     });
   }
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
     return this.prisma.user.delete({
       where,
+    });
+  }
+
+  async findUserById(uuid: string) {
+    return this.prisma.user.findUnique({
+      where: { id: uuid },
+    });
+  }
+
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
     });
   }
 }

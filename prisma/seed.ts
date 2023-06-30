@@ -273,19 +273,11 @@ async function seedDummyUsers() {
 async function seed() {
   await seedSpecialities();
   await seedDummyUsers();
-
-  const allUsers = await prisma.user.findMany({
-    include: {
-      doctor: { include: { medicalSpecializations: true } },
-      patient: { include: { medicalData: true } },
-    },
-  });
-  console.dir(allUsers, { depth: null });
 }
 
 seed()
   .catch((e) => {
-    console.log(e.message);
+    console.error(e.message);
   })
   .finally(async () => {
     await prisma.$disconnect();

@@ -18,6 +18,8 @@ import {
 } from '@app/auth/dto';
 import { User } from '@prisma/client';
 import { AuthEntity } from '@app/auth/entity';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { PasswordRequestDto } from '@app/auth/dto/password-request.dto';
 
 @ApiTags('auth')
 @ApiSecurity('bearer')
@@ -61,5 +63,22 @@ export class AuthController {
     @Param('token') token: string,
   ): Promise<{ message: string }> {
     return this.authService.activateAccount(token);
+  }
+
+  @Post('/forgot-password')
+  async forgotPassword(
+    @Body() forgotPasswordRequest: UserRequestDto,
+  ): Promise<SMTPTransport.SentMessageInfo> {
+    const { email } = forgotPasswordRequest;
+    return await this.authService.sendPasswordResetLink(email);
+  }
+
+  @Post('/reset-password/:token')
+  async resetPassword(
+    @Param('token') token: string,
+    @Body() passwordRequest: PasswordRequestDto,
+  ): Promise<{ message: string }> {
+    const { password } = passwordRequest;
+    return this.authService.resetPassword(token, password);
   }
 }
