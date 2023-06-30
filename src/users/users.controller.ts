@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -25,6 +26,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Get()
   getAllUsers() {
     return this.userService.users({});
@@ -32,6 +34,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Get('/:uuid')
   getUser(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return this.userService.user({ id: uuid });
@@ -39,6 +42,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(201)
   @Post()
   postNewUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
@@ -46,6 +50,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(202)
   @Patch('/:uuid')
   patchUser(
     @Param('uuid', new ParseUUIDPipe()) uuid: string,
@@ -59,6 +64,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
   @Delete('/:uuid')
   deleteUser(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
     return this.userService.deleteUser({ id: uuid });

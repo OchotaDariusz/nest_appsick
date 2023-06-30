@@ -240,6 +240,7 @@ async function seedDummyUsers() {
           '$2b$10$G0R2ixXp4E3Xj0/gj7qNjuRDC1U4yBLwOqplD4mdNUUZlXO8lvf5C',
         sex: 'MALE',
         roles: [Role.ADMIN, Role.USER],
+        isActive: true,
       },
     });
   }
@@ -251,6 +252,12 @@ async function seedDummyUsers() {
       data: newUserWithoutPesel,
     });
 
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isActive: true,
+      },
+    });
     usersCount++;
     if (usersCount === 1) {
       await createAdminAccount();

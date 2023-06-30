@@ -38,15 +38,17 @@ export class UsersService {
     });
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async createUser(userData: Prisma.UserCreateInput): Promise<User> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(data.password, salt);
+    const hashedPassword = await bcrypt.hash(userData.password, salt);
     return this.prisma.user.create({
       data: {
-        ...data,
-        dateOfBirth: new Date(data.dateOfBirth),
+        ...userData,
+        dateOfBirth: new Date(userData.dateOfBirth),
         password: hashedPassword,
         roles: [Role.USER],
+        isActive: false,
       },
     });
   }
@@ -57,7 +59,7 @@ export class UsersService {
   }): Promise<User> {
     const { where, data } = params;
     const userToUpdate = await this.prisma.user.findUnique({
-      where: { id: where.id },
+      where: { ...where },
     });
     if (!userToUpdate) {
       throw new NotFoundException('User not found.');

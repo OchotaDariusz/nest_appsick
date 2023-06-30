@@ -23,6 +23,7 @@ model User {
   doctor      Doctor?
   patient     Patient?
   roles       String[]
+  isActive    Boolean  @default(false)
 }
 
 model Doctor {

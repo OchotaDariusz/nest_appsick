@@ -5,13 +5,17 @@ import {
   UseGuards,
   Request,
   Get,
+  Param,
 } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from '@app/auth/auth.service';
-import { CreateUserDto } from '@app/users/dto';
 import { JwtAuthGuard } from '@app/auth/guards';
-import { LoginRequestDto } from '@app/auth/dto';
+import {
+  UserRequestDto,
+  LoginRequestDto,
+  RegisterRequestDto,
+} from '@app/auth/dto';
 import { User } from '@prisma/client';
 import { AuthEntity } from '@app/auth/entity';
 
@@ -22,8 +26,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/register')
-  async register(@Body() user: CreateUserDto): Promise<User> {
-    return this.authService.register(user);
+  async register(@Body() registerRequest: RegisterRequestDto): Promise<User> {
+    return this.authService.register(registerRequest);
   }
 
   @Post('/login')
@@ -42,5 +46,20 @@ export class AuthController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...user } = req.user;
     return user;
+  }
+
+  @Post('/send-activation-link')
+  async sendActivationLink(
+    @Body() activationRequest: UserRequestDto,
+  ): Promise<void> {
+    const { email } = activationRequest;
+    return await this.authService.sendActivationLink(email);
+  }
+
+  @Get('/activate/:token')
+  async activateAccount(
+    @Param('token') token: string,
+  ): Promise<{ message: string }> {
+    return this.authService.activateAccount(token);
   }
 }
