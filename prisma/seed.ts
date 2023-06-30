@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { Role } from '../src/auth/roles';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,7 @@ async function seedSpecialities() {
       },
     });
   }
+
   const specialities = [
     'Allergology',
     'Anaesthesiology',
@@ -185,6 +187,13 @@ async function seedDummyUsers() {
         },
       },
     });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        roles: { push: [Role.DOCTOR, Role.USER] },
+      },
+    });
   }
 
   async function createPatient(user: any, pesel: string) {
@@ -211,6 +220,28 @@ async function seedDummyUsers() {
         },
       },
     });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        roles: { push: [Role.PATIENT, Role.USER] },
+      },
+    });
+  }
+
+  async function createAdminAccount() {
+    await prisma.user.create({
+      data: {
+        email: 'admin@mail.com',
+        firstName: 'Super',
+        lastName: 'Admin',
+        dateOfBirth: new Date('1993-08-24'),
+        password:
+          '$2b$10$G0R2ixXp4E3Xj0/gj7qNjuRDC1U4yBLwOqplD4mdNUUZlXO8lvf5C',
+        sex: 'MALE',
+        roles: [Role.ADMIN, Role.USER],
+      },
+    });
   }
 
   let usersCount = 0;
@@ -221,6 +252,9 @@ async function seedDummyUsers() {
     });
 
     usersCount++;
+    if (usersCount === 1) {
+      await createAdminAccount();
+    }
     if (usersCount <= 3) {
       await createDoctor(user);
     } else {

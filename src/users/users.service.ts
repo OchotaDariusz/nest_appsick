@@ -7,6 +7,7 @@ import { User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '@app/prisma/prisma.service';
+import { Role } from '@app/auth/roles';
 
 @Injectable()
 export class UsersService {
@@ -45,6 +46,7 @@ export class UsersService {
         ...data,
         dateOfBirth: new Date(data.dateOfBirth),
         password: hashedPassword,
+        roles: [Role.USER],
       },
     });
   }
