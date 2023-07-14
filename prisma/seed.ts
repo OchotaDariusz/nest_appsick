@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+
 import { Role } from '../src/auth/roles';
 
 const prisma = new PrismaClient();

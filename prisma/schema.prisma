@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  firstName   String
-  lastName    String
-  password    String
-  dateOfBirth DateTime
-  sex         String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  doctor      Doctor?
-  patient     Patient?
-  roles       String[]
-  isActive    Boolean  @default(false)
+  id           String        @id @default(uuid())
+  email        String        @unique
+  firstName    String
+  lastName     String
+  password     String
+  dateOfBirth  DateTime
+  sex          String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  doctor       Doctor?
+  patient      Patient?
+  roles        String[]
+  isActive     Boolean       @default(false)
+  chatMessages ChatMessage[]
 }
 
 model Doctor {
@@ -117,6 +118,8 @@ model ChatMessage {
   id        String    @id @default(uuid())
   message   String
   sender    String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   chat      VisitChat @relation(fields: [chatId], references: [id])

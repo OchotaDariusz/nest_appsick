@@ -70,7 +70,11 @@ export class UsersService {
     if ('email' in userToUpdate && userToUpdate.email === data.email) {
       delete updateDetails.email;
     } else if ('email' in updateDetails) {
-      const emailExists = await this.prisma.user.findUnique({ where: {} });
+      const emailExists = await this.prisma.user.findUnique({
+        where: {
+          email: updateDetails.email as string,
+        },
+      });
       if (emailExists) {
         throw new ConflictException('Email already exists.');
       }
